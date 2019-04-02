@@ -1,0 +1,403 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Wayfinder</title>
+<link rel="stylesheet" href="styles.css">
+<link href="https://fonts.googleapis.com/css?family=Titillium+Web|Satisfy" rel="stylesheet">
+	
+</head>
+
+<body>
+	<header>
+		<h1><span>SAIT |</span> Wayfinder</h1>
+	</header>
+	
+	<div id="mainContainer">
+		<div id="selector">
+             <select id = "selectDestination" class="bounceIn" required>
+				<option value="placeholder" class = "placeholder" disable selected>Select Destination</option>
+               <option value = "library">Library</option>
+               <option value = "ict">ICT Services</option>
+               <option value = "stdsrv">Student Services</option>
+               <option value = "lamb">Lamb Learning Success Center</option>
+             </select>
+			 <select id="selectEntrance" required>
+				 <option value="placeholder" disable selected>Select Starting Entrance</option>
+			  	<option value="north">North Entrance</option>
+				 <option value="east">East Entrance</option>
+				 <option value="south">South Entrance</option>
+				 <option value="west">West Entrance</option>
+			  </select>
+		</div>
+		<h2 id="landing" class="bounceIn">Wayfinder</h2>
+	<div id="split">
+		<div id="info">
+			<h2></h2>
+			<p></p>
+			<h3></h3>
+		</div>
+		<div id="mapPlace"></div>
+	</div>
+		
+		
+		
+		<div id="buttonContainer">
+			<div>
+				<h4 id="floor">Floor Level</h4>
+			<button id="level1">Level 1</button>
+			<button id="level2">Level 2</button>
+			<button id="level3">Level 3</button>
+				</div>
+		</div>
+	</div>
+</body>
+	<script>
+		//make an array to store all markers
+		var markers = [];
+		console.log(markers);
+		// Sets the map on all markers in the array.
+      	function setMapOnAll(map){
+        	for (var i = 0; i < markers.length; i++) {
+          		markers[i].setMap(map);
+        	}
+      	}
+      	//Removes the markers from the map, but keeps them in the array.
+      	function clearMarkers(){
+        	setMapOnAll(null);
+      	}
+		//deletes the markers in the array
+		function deleteMarkers(){
+			clearMarkers();
+        	markers = [];
+      	}
+		
+		//make an array to store all paths
+		var paths = [];
+		console.log(paths);
+		function setMapOnAllPaths(map){
+			for(var s = 0; s < paths.length; s++){
+				paths[s].setMap(map)
+			}
+		}
+		function clearPaths(){
+			setMapOnAllPaths(null);
+		}
+		function deletePaths(){
+			clearPaths();
+			paths = [];
+		}
+		
+		
+		
+		var selectedEntrance, map, 
+		//ICT
+		nEntranceIct, nEntranceIctCoords, nEntranceIctWindow, pathLevel1IctNorth,
+		sEntranceIct, sEntranceIctCoords, sEntranceIctWindow, pathLevel1IctSouth,
+		eEntranceIct, eEntranceIctCoords, eEntranceIctWindow, pathLevel1IctEast,
+		escalatorIct, destinationIct, escalator2Ict, escalator3Ict, pathLevel3Ict, check3Ict,
+		//Library
+		nEntranceLibrary, nEntranceLibraryCoords, pathLevel1LibraryNorth,
+		eEntranceLibrary, eEntranceLibraryCoords, pathLevel1LibraryEast, eEntranceLibraryWindow,
+			wEntranceLibraryWindow,
+		escalatorLibrary, wDestinationLibrary, 
+		//Lamb
+		eEntranceLamb, eEntranceLambWindow, pathLevel1LambEast, pathLevel1LambEastCoords,
+		nEntranceLamb, nEntranceLambWindow, nEntranceLambCoords, pathLevel1LambNorthCoords, pathLevel1LambNorth,
+		wEntranceLamb, wEntranceLambWindow, wEntranceLambCoords, pathLevel1LambWestCoords, pathLevel1LambWest,
+		sEntranceLamb, sEntranceLambWindow, sEntranceLambCoords, pathLevel1LambSouthCoords, pathLevel1LambSouth,
+		escalator1Lamb, escalator1LambWindow,
+		destinationLamb, destinationLambWindow,
+		escalator2Lamb, escalator2LambWindow,
+		pathLevel2Lamb,
+		//Student Services
+		eEntranceStdSrv, eEntranceStdSrvWindow, eEntranceStdSrvCoords,
+		wEntranceStdSrv, wEntranceStdSrvWindow, wEntranceStdSrvCoords, pathLevel1StdSrvWestCoords, pathLevel1StdSrvWest,
+		escalator1StdSrv, escalator1StdSrvWindow, escalator1StdSrvCoords,
+			
+		pathLevel1StdSrvCoords, pathLevel1StdSrv,
+		destinationStdSrv, destinationStdSrvWindow, destinationStdSrvCoords,
+		escalator2StdSrv, escalator2StdSrvWindow, escalator2StdSrvCoords,
+		bridge, bridgeWindow, bridgeCoords,
+		heritage, heritageWindow, heritageCoords;
+		
+		document.getElementById('selectEntrance').style.visibility='hidden';
+		document.getElementById('buttonContainer').style.visibility='hidden';
+		document.getElementById('floor').style.visibility='hidden';
+		
+		//Select Destination 
+		var selectD = document.getElementById("selectDestination");
+		var selectedDestination;
+
+		selectD.addEventListener("change", function() {
+		
+			selectedDestination = selectD.options[selectD.selectedIndex].value;
+			document.querySelector('body').style.background='white';
+
+			if (selectedDestination === 'library'){
+				document.getElementById('landing').style.display='none';
+
+				loadLibrary();
+
+				//html toggles
+				document.getElementById("selectEntrance").selectedIndex = 0;
+				document.getElementById('selectEntrance').style.visibility='visible';
+				document.getElementById('buttonContainer').style.visibility='hidden';
+				document.getElementById('floor').style.visibility='hidden';
+			}
+			if (selectedDestination === 'ict'){
+				document.getElementById('landing').style.display='none';
+
+				loadIct();
+
+				//button toggles
+				document.getElementById('buttonContainer').style.visibility='visible';
+
+				document.getElementById('level1').disabled = true;
+				document.getElementById('level2').disabled = false;
+				document.getElementById('level3').disabled = false;
+				//select toggles
+				document.getElementById("selectEntrance").selectedIndex = 0;
+				document.getElementById('selectEntrance').style.visibility='visible';
+				document.getElementById('level3').style.display='inline';
+
+				document.getElementById('floor').style.visibility='visible';
+			}
+			if (selectedDestination === 'stdsrv'){
+				document.getElementById('landing').style.display='none';
+
+				loadStdSrv();
+				
+				//button toggles
+				document.getElementById('buttonContainer').style.visibility='visible';
+
+				document.getElementById('level1').disabled = true;
+				document.getElementById('level2').disabled = false;
+				document.getElementById('level3').disabled = true;
+				//select toggles
+				document.getElementById("selectEntrance").selectedIndex = 0;
+				document.getElementById('selectEntrance').style.visibility='visible';
+				document.getElementById('level3').style.display = 'none';
+
+				document.getElementById('floor').style.visibility='visible';
+			}
+			if (selectedDestination === 'lamb'){
+				document.getElementById('landing').style.display='none';
+
+				loadLamb();
+				
+				//button toggles
+				document.getElementById('buttonContainer').style.visibility='visible';
+
+				document.getElementById('level1').disabled = true;
+				document.getElementById('level2').disabled = false;
+				document.getElementById('level3').disabled = true;
+				//select toggles
+				document.getElementById("selectEntrance").selectedIndex = 0;
+				document.getElementById('selectEntrance').style.visibility='visible';
+				document.getElementById('level3').style.display='none';
+
+				document.getElementById('floor').style.visibility='visible';
+			}
+		});
+		
+		//Select Entrance
+		var selectE = document.getElementById("selectEntrance");
+
+		selectE.addEventListener("change", function() {
+		selectedEntrance = selectE.options[selectE.selectedIndex].value;
+		
+		if (selectedEntrance === 'east'){
+			clearMarkers();
+			clearPaths();
+		
+			if (selectedDestination === 'ict'){
+				
+				eEntranceIct.setMap(map);
+				eEntranceIct.setIcon('assets/images/maps_icons/entrance_small.png')
+				eEntranceIctWindow.close(map, eEntranceIct);
+				map.setZoom(18);
+				map.panTo(eEntranceIctCoords);
+				eEntranceIct.setAnimation( google.maps.Animation.BOUNCE );
+			}
+			
+			//Library
+			if (selectedDestination === 'library'){
+				
+				eEntranceLibrary.setMap(map);	
+				eEntranceLibrary.setIcon('assets/images/maps_icons/entrance_small.png')
+				eEntranceLibraryWindow.close(map, eEntranceLibrary);
+				map.setZoom(18);
+				map.panTo(eEntranceLibraryCoords);
+				eEntranceLibrary.setAnimation( google.maps.Animation.BOUNCE );
+			}
+			
+			if (selectedDestination === 'lamb'){
+				
+				eEntranceLamb.setMap(map);	
+				eEntranceLamb.setIcon('assets/images/maps_icons/entrance_small.png')
+				eEntranceLambWindow.close(map, eEntranceLamb);
+				map.setZoom(18);
+				map.panTo(eEntranceLambCoords);
+				eEntranceLamb.setAnimation( google.maps.Animation.BOUNCE );
+			}
+			
+			//Student Services
+			if (selectedDestination === 'stdsrv'){
+				
+				eEntranceStdSrv.setMap(map);	
+				eEntranceStdSrv.setIcon('assets/images/maps_icons/entrance_small.png')
+				eEntranceStdSrvWindow.close(map, eEntranceStdSrv);
+				map.setZoom(18);
+				map.panTo(eEntranceStdSrvCoords);
+				eEntranceStdSrv.setAnimation( google.maps.Animation.BOUNCE );
+			}
+			
+		}
+		if (selectedEntrance === 'west'){
+			clearMarkers();
+			clearPaths();
+		
+			if(selectedDestination === 'ict'){
+				
+				wEntranceIct.setMap(map);
+				wEntranceIct.setIcon('assets/images/maps_icons/entrance_small.png')
+				wEntranceIctWindow.close(map, wEntranceIct);
+				map.setZoom(18);
+				map.panTo(wEntranceIctCoords);
+				wEntranceIct.setAnimation( google.maps.Animation.BOUNCE );
+			}
+			
+			if(selectedDestination === 'library'){
+				
+				wEntranceLibrary.setMap(map);
+				wEntranceLibrary.setIcon('assets/images/maps_icons/entrance_small.png')
+				wEntranceLibraryWindow.close(map, wEntranceLibrary);
+				map.setZoom(18);
+				map.panTo(wEntranceLibraryCoords);
+				wEntranceLibrary.setAnimation( google.maps.Animation.BOUNCE );
+			}
+			
+			if(selectedDestination === 'lamb'){
+				
+				wEntranceLamb.setMap(map);
+				wEntranceLamb.setIcon('assets/images/maps_icons/entrance_small.png')
+				wEntranceLambWindow.close(map, wEntranceLamb);
+				map.setZoom(18);
+				map.panTo(wEntranceLambCoords);
+				wEntranceLamb.setAnimation( google.maps.Animation.BOUNCE );
+			}
+			
+			if(selectedDestination === 'stdsrv'){
+				
+				wEntranceStdSrv.setMap(map);
+				wEntranceStdSrv.setIcon('assets/images/maps_icons/entrance_small.png')
+				wEntranceStdSrvWindow.close(map, wEntranceStdSrv);
+				map.setZoom(18);
+				map.panTo(wEntranceStdSrvCoords);
+				wEntranceStdSrv.setAnimation( google.maps.Animation.BOUNCE );
+			}
+			
+		}
+		if (selectedEntrance === 'north'){
+			clearMarkers();
+			clearPaths();
+		
+			//ICT
+			if (selectedDestination === 'ict'){
+				
+				nEntranceIct.setMap(map);
+				nEntranceIct.setIcon('assets/images/maps_icons/entrance_small.png')
+				nEntranceIctWindow.close(map, nEntranceIct);
+				map.setZoom(18);
+				map.panTo(nEntranceIctCoords);
+				nEntranceIct.setAnimation( google.maps.Animation.BOUNCE );
+			}
+			
+			if (selectedDestination === 'lamb'){
+				
+				nEntranceLamb.setMap(map);
+				nEntranceLamb.setIcon('assets/images/maps_icons/entrance_small.png')
+				nEntranceLambWindow.close(map, nEntranceLamb);
+				map.setZoom(18);
+				map.panTo(nEntranceLambCoords);
+				nEntranceLamb.setAnimation( google.maps.Animation.BOUNCE );
+			}
+			
+			if(selectedDestination === 'library'){
+				
+				nEntranceLibrary.setMap(map);
+				nEntranceLibrary.setIcon('assets/images/maps_icons/entrance_small.png')
+				nEntranceLibraryWindow.close(map, nEntranceLibrary);
+				map.setZoom(18);
+				map.panTo(nEntranceLibraryCoords);
+				nEntranceLibrary.setAnimation( google.maps.Animation.BOUNCE );
+			}
+			
+			if(selectedDestination === 'stdsrv'){
+				
+				nEntranceStdSrv.setMap(map);
+				nEntranceStdSrv.setIcon('assets/images/maps_icons/entrance_small.png')
+				nEntranceStdSrvWindow.close(map, nEntranceStdSrv);
+				map.setZoom(18);
+				map.panTo(nEntranceStdSrvCoords);
+				nEntranceStdSrv.setAnimation( google.maps.Animation.BOUNCE );
+			}
+			
+		}
+		if (selectedEntrance === 'south'){
+			clearMarkers();
+			clearPaths();
+		
+			if(selectedDestination === 'ict'){
+				
+				sEntranceIct.setMap(map);	
+				sEntranceIct.setIcon('assets/images/maps_icons/entrance_small.png')
+				sEntranceIctWindow.close(map, sEntranceIct);
+				map.setZoom(18);
+				map.panTo(sEntranceIctCoords);
+				sEntranceIct.setAnimation( google.maps.Animation.BOUNCE );
+			}
+			if(selectedDestination === 'lamb'){
+				
+				sEntranceLamb.setMap(map);	
+				sEntranceLamb.setIcon('assets/images/maps_icons/entrance_small.png')
+				sEntranceLambWindow.close(map, sEntranceLamb);
+				map.setZoom(18);
+				map.panTo(sEntranceLambCoords);
+				sEntranceLamb.setAnimation( google.maps.Animation.BOUNCE );
+			}
+			
+			if(selectedDestination === 'library'){
+	
+				sEntranceLibrary.setMap(map);	
+				sEntranceLibrary.setIcon('assets/images/maps_icons/entrance_small.png')
+				sEntranceLibraryWindow.close(map, sEntranceLibrary);
+				map.setZoom(18);
+				map.panTo(sEntranceLibraryCoords);
+				sEntranceLibrary.setAnimation( google.maps.Animation.BOUNCE );
+			}
+			
+			if(selectedDestination === 'stdsrv'){
+	
+				sEntranceStdSrv.setMap(map);	
+				sEntranceStdSrv.setIcon('assets/images/maps_icons/entrance_small.png')
+				sEntranceStdSrvWindow.close(map, sEntranceStdSrv);
+				map.setZoom(18);
+				map.panTo(sEntranceStdSrvCoords);
+				sEntranceStdSrv.setAnimation( google.maps.Animation.BOUNCE );
+			}
+		
+		}
+	});
+	
+	</script>
+	<script type="text/javascript" src="student_services.js"></script>
+	<script type="text/javascript" src="lamb.js"></script>
+	<script type="text/javascript" src="library.js"></script>
+	<script type="text/javascript" src="ict.js"></script>
+	<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDGvqMTt1orMIidhIJKLK7NwySTZSbR0yA">
+	</script>
+</html>
